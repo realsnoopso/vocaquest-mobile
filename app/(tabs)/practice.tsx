@@ -6,7 +6,7 @@ import { QuizModal } from '@/components/QuizModal';
 
 export default function PracticeScreen() {
   const { settings } = useSettings();
-  const { state, triggerQuiz, answer, answerWritten, dismiss, pause } = useQuiz(
+  const { state, error, triggerQuiz, answer, answerWritten, dismiss, pause } = useQuiz(
     settings.quiz_interval_minutes,
     settings.quiz_type
   );
@@ -71,6 +71,13 @@ export default function PracticeScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Error message */}
+        {error && (
+          <View className="mt-4 bg-red-500/10 rounded-xl p-4 border border-red-500/30 w-full">
+            <Text className="text-red-400 text-sm text-center">{error}</Text>
+          </View>
+        )}
 
         {/* Tips */}
         <View className="mt-8 bg-card rounded-xl p-4 border border-border w-full">

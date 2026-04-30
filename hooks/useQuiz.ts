@@ -74,9 +74,18 @@ function generateQuestion(words: Word[], quizType: QuizType = 'multiple-choice')
   };
 }
 
+export function getMinWordsForType(quizType: QuizType): number {
+  switch (quizType) {
+    case 'multiple-choice': return 4;
+    case 'written': return 1;
+    case 'fill-in-blank': return 1;
+  }
+}
+
 export function useQuiz(intervalMinutes: number, quizType: QuizType = 'multiple-choice') {
   const [state, setState] = useState<QuizState>({ status: 'idle', nextQuizAt: Date.now() + intervalMinutes * 60 * 1000 });
   const [schedules, setSchedules] = useState<QuizSchedule[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const pausedUntilRef = useRef<number>(0);
 
   useEffect(() => {
@@ -87,17 +96,31 @@ export function useQuiz(intervalMinutes: number, quizType: QuizType = 'multiple-
     if (Date.now() < pausedUntilRef.current) return;
     if (!isWithinSchedule(schedules)) return;
 
+    setError(null);
     setState({ status: 'loading' });
     try {
       const words = await queries.getAllActiveWords();
+      const minWords = getMinWordsForType(quizType);
+      const eligibleWords = words.filter((w) => w.llm_generated && w.primary_meaning);
+      if (eligibleWords.length < minWords) {
+        setState({ status: 'idle', nextQuizAt: Date.now() + intervalMinutes * 60 * 1000 });
+        setError(
+          quizType === 'multiple-choice'
+            ? `객관식 퀴즈는 최소 ${minWords}개의 학습 가능한 단어가 필요해요. (현재: ${eligibleWords.length}개)\n단어장에서 더 많은 단어를 추가하거나 마스터를 초기화해보세요.`
+            : `학습 가능한 단어가 없어요. 단어장에서 단어를 추가해보세요.`
+        );
+        return;
+      }
       const question = generateQuestion(words, quizType);
       if (!question) {
         setState({ status: 'idle', nextQuizAt: Date.now() + intervalMinutes * 60 * 1000 });
+        setError('퀴즈를 생성할 수 없어요. 잠시 후 다시 시도해주세요.');
         return;
       }
       setState({ status: 'presenting', question, startedAt: Date.now() });
     } catch {
       setState({ status: 'idle', nextQuizAt: Date.now() + intervalMinutes * 60 * 1000 });
+      setError('단어를 불러오지 못했어요. 인터넷 연결을 확인해주세요.');
     }
   }, [intervalMinutes, schedules, quizType]);
 
@@ -151,6 +174,7 @@ export function useQuiz(intervalMinutes: number, quizType: QuizType = 'multiple-
   }, [state]);
 
   const dismiss = useCallback(() => {
+    setError(null);
     setState({ status: 'idle', nextQuizAt: Date.now() + intervalMinutes * 60 * 1000 });
   }, [intervalMinutes]);
 
@@ -159,5 +183,5 @@ export function useQuiz(intervalMinutes: number, quizType: QuizType = 'multiple-
     dismiss();
   }, [dismiss]);
 
-  return { state, triggerQuiz, answer, answerWritten, dismiss, pause };
+  return { state, error, triggerQuiz, answer, answerWritten, dismiss, pause };
 }
