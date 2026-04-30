@@ -1,25 +1,37 @@
-const { withPodfile } = require('expo/config-plugins');
+const { withDangerousMod } = require('expo/config-plugins');
+const fs = require('fs');
+const path = require('path');
 
 module.exports = function withSwiftConcurrency(config) {
-  return withPodfile(config, (config) => {
-    // Fix: Swift 6 concurrency warnings treated as errors in Xcode 16
-    const postInstallHook = `
+  return withDangerousMod(config, [
+    'ios',
+    async (config) => {
+      const projectRoot = config.modRequest.platformProjectRoot;
+      // Add SWIFT_STRICT_CONCURRENCY to all pod targets via a separate ruby script
+      const podfilePath = path.join(projectRoot, 'Podfile');
+      
+      if (fs.existsSync(podfilePath)) {
+        let podfile = fs.readFileSync(podfilePath, 'utf8');
+        
+        const swiftFix = `
+  # Fix Swift 6 concurrency errors in Xcode 16
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       config.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
     end
   end
 `;
-    const podfile = config.modResults;
-    
-    if (podfile.includes('post_install') && !podfile.includes('SWIFT_STRICT_CONCURRENCY')) {
-      // Insert Swift concurrency fix into post_install block
-      config.modResults = podfile.replace(
-        /(post_install do \|installer\|)/,
-        '$1' + postInstallHook
-      );
-    }
-    
-    return config;
-  });
+        
+        if (!podfile.includes('SWIFT_STRICT_CONCURRENCY')) {
+          podfile = podfile.replace(
+            /(post_install do \|installer\|)/m,
+            '$1' + swiftFix
+          );
+          fs.writeFileSync(podfilePath, podfile);
+        }
+      }
+      
+      return config;
+    },
+  ]);
 };
