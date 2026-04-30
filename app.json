@@ -34,8 +34,7 @@
             "newArchEnabled": true
           }
         }
-      ],
-      "./plugins/withSwiftConcurrency"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
