@@ -21,17 +21,19 @@
     "expo-secure-store": "^55.0.13",
     "expo-status-bar": "~3.0.9",
     "expo-system-ui": "^55.0.16",
+    "expo-updates": "~29.0.17",
     "nativewind": "^4.2.3",
     "react": "19.1.0",
     "react-native": "0.81.5",
     "react-native-gesture-handler": "^2.31.1",
     "react-native-safe-area-context": "^5.7.0",
     "react-native-screens": "^4.24.0",
-    "tailwindcss": "^4.2.4",
+    "tailwindcss": "^3.4.19",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "eas-cli": "^18.9.1",
     "typescript": "~5.9.2"
   },
   "private": true

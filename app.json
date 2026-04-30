@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.realsnoopso.vocaquest"
+      "bundleIdentifier": "com.realsnoopso.vocaquest",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +24,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-updates"
     ],
     "experiments": {
       "typedRoutes": true
@@ -32,6 +36,10 @@
         "projectId": "aeae65d7-d717-407c-89b0-d7c5a2cc5494"
       }
     },
-    "owner": "realsnoopsoso"
+    "owner": "realsnoopsoso",
+    "updates": {
+      "url": "https://u.expo.dev/aeae65d7-d717-407c-89b0-d7c5a2cc5494"
+    },
+    "runtimeVersion": "1.0.0"
   }
 }
