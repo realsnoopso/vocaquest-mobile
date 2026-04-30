@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "vocaquest",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.realsnoopso.vocaquest",
@@ -25,16 +25,7 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-updates",
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "deploymentTarget": "15.1",
-            "newArchEnabled": true
-          }
-        }
-      ]
+      "expo-updates"
     ],
     "experiments": {
       "typedRoutes": true
