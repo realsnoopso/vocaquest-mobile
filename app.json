@@ -25,7 +25,16 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-updates"
+      "expo-updates",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
+        }
+      ],
+      "./plugins/withSwiftConcurrency"
     ],
     "experiments": {
       "typedRoutes": true
