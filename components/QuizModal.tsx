@@ -13,6 +13,7 @@ interface QuizModalProps {
 
 export function QuizModal({ state, onAnswer, onAnswerWritten, onDismiss, onPause }: QuizModalProps) {
   const [writtenInput, setWrittenInput] = useState('');
+  const [showDetail, setShowDetail] = useState(false);
   const isAnswered = state.status === 'answered' || state.status === 'answered-written';
   const isResult = state.status === 'result';
 
@@ -25,6 +26,7 @@ export function QuizModal({ state, onAnswer, onAnswerWritten, onDismiss, onPause
   };
 
   const correct = 'correct' in state ? state.correct : false;
+  const { etymology } = question.word;
 
   return (
     <Modal visible animationType="slide" presentationStyle="fullScreen">
@@ -65,7 +67,7 @@ export function QuizModal({ state, onAnswer, onAnswerWritten, onDismiss, onPause
               </Text>
 
               {question.word.meanings?.length > 0 && (
-                <View className="space-y-2 mb-6">
+                <View className="space-y-2 mb-4">
                   {question.word.meanings.map((m, i) => (
                     <View key={i} className="bg-white/5 rounded-lg p-3">
                       <Text className="text-white/70 text-sm">
@@ -79,6 +81,67 @@ export function QuizModal({ state, onAnswer, onAnswerWritten, onDismiss, onPause
                 </View>
               )}
 
+              {/* Detail toggle button */}
+              {(etymology?.explanation || etymology?.similar_words?.length) ? (
+                <TouchableOpacity
+                  className="bg-white/10 rounded-xl py-3 items-center mb-3"
+                  onPress={() => setShowDetail(!showDetail)}
+                >
+                  <View className="flex-row items-center gap-2">
+                    <Ionicons
+                      name={showDetail ? 'chevron-up' : 'book-outline'}
+                      size={16}
+                      color="rgba(255,255,255,0.7)"
+                    />
+                    <Text className="text-white/70 text-sm font-medium">
+                      {showDetail ? '접기' : '자세히 보기'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ) : null}
+
+              {/* Detail section */}
+              {showDetail && (
+                <View className="bg-white/5 rounded-xl p-4 mb-3 space-y-3">
+                  {/* Etymology */}
+                  {etymology?.explanation ? (
+                    <View>
+                      <Text className="text-white/50 text-xs font-medium mb-2">📖 어원</Text>
+                      <View className="bg-white/5 rounded-lg p-3">
+                        <Text className="text-white/60 text-sm">
+                          <Text className="font-medium text-white/80">{etymology.origin_language}</Text>
+                          {' '}{etymology.origin_word}
+                          {etymology.origin_meaning ? ` (${etymology.origin_meaning})` : ''}
+                        </Text>
+                        {etymology.compounds?.length > 0 && (
+                          <Text className="text-white/40 text-xs mt-1">
+                            {etymology.compounds.map((c) => `${c.part}(${c.meaning})`).join(' + ')}
+                          </Text>
+                        )}
+                        <Text className="text-white/50 text-xs mt-2 leading-relaxed">
+                          {etymology.explanation}
+                        </Text>
+                      </View>
+                    </View>
+                  ) : null}
+
+                  {/* Similar words */}
+                  {etymology?.similar_words?.length > 0 && (
+                    <View>
+                      <Text className="text-white/50 text-xs font-medium mb-2">🔗 유사 단어</Text>
+                      <View className="flex-row flex-wrap gap-2">
+                        {etymology.similar_words.map((w, i) => (
+                          <View key={i} className="bg-white/10 rounded-full px-3 py-1">
+                            <Text className="text-white/60 text-xs">{w}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {/* Close button */}
               <TouchableOpacity
                 className="bg-primary rounded-xl py-4 items-center mt-2"
                 onPress={onDismiss}
