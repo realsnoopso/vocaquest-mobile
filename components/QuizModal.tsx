@@ -96,24 +96,22 @@ export function QuizModal({ state, stats, onAnswer, onAnswerWritten, onDismiss, 
                 </View>
               )}
 
-              {/* Detail toggle button */}
-              {(etymology?.explanation || etymology?.similar_words?.length) ? (
-                <TouchableOpacity
-                  className="bg-white/10 rounded-xl py-3 items-center mb-3"
-                  onPress={() => setShowDetail(!showDetail)}
-                >
-                  <View className="flex-row items-center gap-2">
-                    <Ionicons
-                      name={showDetail ? 'chevron-up' : 'book-outline'}
-                      size={16}
-                      color="rgba(255,255,255,0.7)"
-                    />
-                    <Text className="text-white/70 text-sm font-medium">
-                      {showDetail ? '접기' : '자세히 보기'}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ) : null}
+              {/* Detail toggle button — always visible */}
+              <TouchableOpacity
+                className="bg-white/10 rounded-xl py-3 items-center mb-3"
+                onPress={() => setShowDetail(!showDetail)}
+              >
+                <View className="flex-row items-center gap-2">
+                  <Ionicons
+                    name={showDetail ? 'chevron-up' : 'book-outline'}
+                    size={16}
+                    color="rgba(255,255,255,0.7)"
+                  />
+                  <Text className="text-white/70 text-sm font-medium">
+                    {showDetail ? '접기' : '자세히 보기'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
 
               {/* Detail section */}
               {showDetail && (
@@ -138,7 +136,18 @@ export function QuizModal({ state, stats, onAnswer, onAnswerWritten, onDismiss, 
                         </Text>
                       </View>
                     </View>
-                  ) : null}
+                  ) : (
+                    <View>
+                      <Text className="text-white/50 text-xs font-medium mb-2">📖 단어 정보</Text>
+                      <View className="bg-white/5 rounded-lg p-3">
+                        <Text className="text-white/50 text-xs leading-relaxed">
+                          {question.word.meaning_kr
+                            ? `뜻: ${question.word.meaning_kr}`
+                            : '이 단어의 어원 정보가 아직 준비되지 않았어요.'}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
 
                   {/* Similar words */}
                   {etymology?.similar_words?.length > 0 && (
@@ -155,7 +164,6 @@ export function QuizModal({ state, stats, onAnswer, onAnswerWritten, onDismiss, 
                   )}
                 </View>
               )}
-
               {/* Close button */}
               <TouchableOpacity
                 className="bg-primary rounded-xl py-4 items-center mt-2"
