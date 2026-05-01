@@ -84,6 +84,12 @@ export function getMinWordsForType(quizType: QuizType): number {
   }
 }
 
+export interface QuizStats {
+  totalActive: number;
+  unmastered: number;
+  mastered: number;
+}
+
 const ts = () => new Date().toISOString().split('T')[1].slice(0, 12);
 
 export function useQuiz(intervalMinutes: number, quizType: QuizType = 'multiple-choice') {
@@ -91,6 +97,8 @@ export function useQuiz(intervalMinutes: number, quizType: QuizType = 'multiple-
   const [schedules, setSchedules] = useState<QuizSchedule[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [debugLog, setDebugLog] = useState<string[]>([]);
+  const [quizStats, setQuizStats] = useState<QuizStats>({ totalActive: 0, unmastered: 0, mastered: 0 });
+  const quizzedCountRef = useRef(0);
   const pausedUntilRef = useRef<number>(0);
 
   const debug = useCallback((msg: string) => {
@@ -180,6 +188,18 @@ export function useQuiz(intervalMinutes: number, quizType: QuizType = 'multiple-
 
       const words = allWords || [];
       debug(`📝 조회된 단어 (mastered=false): ${words.length}개`);
+
+      // Fetch total word count for stats
+      const { count: totalCount } = await supabase
+        .from('words')
+        .select('*', { count: 'exact', head: true })
+        .in('word_list_id', listIds);
+      
+      const totalActive = totalCount || 0;
+      const unmastered = words.filter((w: Word) => w.llm_generated && w.primary_meaning).length;
+      const mastered = totalActive - words.length;
+      setQuizStats({ totalActive, unmastered, mastered });
+      debug(`📊 통계: 총 ${totalActive}개 / 미학습 ${unmastered}개 / 마스터 ${mastered}개`);
 
       // Step 7: Filter eligible
       const eligibleWords = words.filter((w: Word) => w.llm_generated && w.primary_meaning);
@@ -273,6 +293,7 @@ export function useQuiz(intervalMinutes: number, quizType: QuizType = 'multiple-
   }, [state]);
 
   const dismiss = useCallback(() => {
+    quizzedCountRef.current += 1;
     setError(null);
     setDebugLog([]);
     setState({ status: 'idle', nextQuizAt: Date.now() + intervalMinutes * 60 * 1000 });
@@ -283,5 +304,5 @@ export function useQuiz(intervalMinutes: number, quizType: QuizType = 'multiple-
     dismiss();
   }, [dismiss]);
 
-  return { state, error, debugLog, triggerQuiz, answer, answerWritten, dismiss, pause };
+  return { state, error, debugLog, quizStats, quizzedCount: quizzedCountRef.current, triggerQuiz, answer, answerWritten, dismiss, pause };
 }

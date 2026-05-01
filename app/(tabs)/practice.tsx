@@ -6,7 +6,7 @@ import { QuizModal } from '@/components/QuizModal';
 
 export default function PracticeScreen() {
   const { settings } = useSettings();
-  const { state, error, debugLog, triggerQuiz, answer, answerWritten, dismiss, pause } = useQuiz(
+  const { state, error, debugLog, quizStats, triggerQuiz, answer, answerWritten, dismiss, pause } = useQuiz(
     settings.quiz_interval_minutes,
     settings.quiz_type
   );
@@ -73,6 +73,27 @@ export default function PracticeScreen() {
             </TouchableOpacity>
           </View>
 
+          {/* Progress bar */}
+          {quizStats.totalActive > 0 && (
+            <View className="mt-4 bg-card rounded-xl p-4 border border-border w-full">
+              <View className="flex-row justify-between mb-1">
+                <Text className="text-xs text-muted-foreground">마스터 진행률</Text>
+                <Text className="text-xs text-muted-foreground">
+                  {quizStats.mastered}/{quizStats.totalActive} ({Math.round((quizStats.mastered / quizStats.totalActive) * 100)}%)
+                </Text>
+              </View>
+              <View className="h-2 bg-muted rounded-full overflow-hidden">
+                <View
+                  className="h-full bg-primary rounded-full"
+                  style={{ width: `${Math.round((quizStats.mastered / quizStats.totalActive) * 100)}%` }}
+                />
+              </View>
+              <Text className="text-xs text-muted-foreground mt-2 text-center">
+                🎯 학습할 단어 {quizStats.unmastered}개 남음
+              </Text>
+            </View>
+          )}
+
           {/* Error message */}
           {error && (
             <View className="mt-4 bg-red-500/10 rounded-xl p-4 border border-red-500/30 w-full">
@@ -114,6 +135,7 @@ export default function PracticeScreen() {
       {(isPresenting || isResult || state.status === 'answered' || state.status === 'answered-written') && (
         <QuizModal
           state={state}
+          stats={quizStats}
           onAnswer={answer}
           onAnswerWritten={answerWritten}
           onDismiss={dismiss}

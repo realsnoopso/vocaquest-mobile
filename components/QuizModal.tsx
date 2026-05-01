@@ -2,16 +2,18 @@ import { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Modal, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { QuizState } from '@/lib/types';
+import type { QuizStats } from '@/hooks/useQuiz';
 
 interface QuizModalProps {
   state: QuizState & { status: 'presenting' | 'answered' | 'answered-written' | 'result' };
+  stats: QuizStats;
   onAnswer: (index: number) => void;
   onAnswerWritten: (text: string) => void;
   onDismiss: () => void;
   onPause: (minutes: number) => void;
 }
 
-export function QuizModal({ state, onAnswer, onAnswerWritten, onDismiss, onPause }: QuizModalProps) {
+export function QuizModal({ state, stats, onAnswer, onAnswerWritten, onDismiss, onPause }: QuizModalProps) {
   const [writtenInput, setWrittenInput] = useState('');
   const [showDetail, setShowDetail] = useState(false);
   const isAnswered = state.status === 'answered' || state.status === 'answered-written';
@@ -44,6 +46,19 @@ export function QuizModal({ state, onAnswer, onAnswerWritten, onDismiss, onPause
           {/* Header */}
           <View className="items-center mb-6">
             <Text className="text-white/60 text-sm">📝 단어 퀴즈</Text>
+            {stats.totalActive > 0 && (
+              <View className="flex-row items-center gap-2 mt-2">
+                <View className="h-1.5 flex-1 max-w-32 bg-white/10 rounded-full overflow-hidden">
+                  <View
+                    className="h-full bg-primary/60 rounded-full"
+                    style={{ width: `${Math.round((stats.mastered / stats.totalActive) * 100)}%` }}
+                  />
+                </View>
+                <Text className="text-white/30 text-xs">
+                  {stats.unmastered}개 남음
+                </Text>
+              </View>
+            )}
           </View>
 
           {isResult ? (
